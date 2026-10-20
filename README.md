@@ -36,6 +36,10 @@ Simulated SMB brute-force and password spraying attacks from Kali Linux against 
 nxc smb 192.168.1.107 -u testuser -p LABPASS.TXT
 ![Brute Force Attack](images/bruteforce-attack.png)
 
+- Performed password spraying attack (multiple users, single password — LABUSER.TXT) using NetExec.
+nxc smb 192.168.1.107 -u LABUSER.TXT -p 'labpassword'
+![Password Spraying Attack](images/password-spraying-attack.png)
+
 ## Detection (Splunk Queries)
 
 Analyzed the forwarded Windows logs in Splunk to detect and investigate the brute-force and password spraying activity.
@@ -55,9 +59,6 @@ index="windows_logs" (EventCode=4625 OR EventCode=4624) | stats count(eval(Event
 index="windows_logs" EventCode=4625 | stats dc(Account_Name) as unique_user count by Source_Network_Address
 ![Unique Users per Source IP](images/unique-users-per-source.png)
 
-- Performed password spraying attack (multiple users, single password — LABUSER.TXT) using NetExec.
-nxc smb 192.168.1.107 -u LABUSER.TXT -p 'labpassword'
-![Password Spraying Attack](images/password-spraying-attack.png)
 Both wordlists contained the correct credential within the list, resulting in a successful authentication (Event ID 4624) preceded by multiple failed attempts (Event ID 4625) — simulating a realistic brute-force/spray pattern for detection in Splunk.
 
 ## Findings
