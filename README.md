@@ -15,3 +15,17 @@ Three VMs on an isolated local network, simulating SMB brute-force and password 
 - SIEM: Ubuntu 24.04.5 LTS — Splunk Enterprise 10.6.0.5
 
 ![Network Topology](topology.svg)
+
+## Lab Setup
+
+- Installed Splunk Enterprise on Ubuntu, enabled receiving on port 9997.
+![Splunk Enterprise Installed](images/splunk-installed.png)
+
+- Installed Splunk Universal Forwarder on Windows 10, pointed to 192.168.1.102:9997.
+![Universal Forwarder Setup](images/forwarder-setup.png)
+
+- Configured inputs.conf on the Forwarder to collect Security, System, and Sysmon logs into index=windows_logs.
+![inputs.conf Configuration](images/inputs-conf.png)
+
+- Verified log flow in Splunk: index="windows_logs" EventCode=4625.
+![Log Verification in Splunk](images/log-verification.png)
