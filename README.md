@@ -13,20 +13,40 @@ Three VMs on an isolated local network, simulating SMB brute-force and password 
 - Attacker: Kali Linux 2026.2 — NetExec (nxc) for brute-force & password spraying
 - Victim: Windows 10 — Sysmon 15.21 + Splunk Universal Forwarder
 - SIEM: Ubuntu 24.04.5 LTS — Splunk Enterprise 10.6.0.5
+
+
 ![Network Topology](topology.svg)
+
+
 
 ## Lab Setup
 - Installed Splunk Enterprise on Ubuntu, enabled receiving on port 9997.
-![Splunk Enterprise Installed](images/splunk-installed.png)
+
+
+![Splunk Enterprise Installed](images/Splunk%20Enterprise%20installed.jpg)
+
+
 
 - Installed Splunk Universal Forwarder on Windows 10, pointed to 192.168.1.102:9997.
-![Universal Forwarder Setup](images/forwarder-setup.png)
+
+
+![Universal Forwarder Setup](images/Universal%20Forwarder%20Setup.jpg)
+
+
 
 - Configured inputs.conf on the Forwarder to collect Security, System, and Sysmon logs into index=windows_logs.
-![inputs.conf Configuration](images/inputs-conf.png)
+
+
+![inputs.conf Configuration](images/inputs.conf%20Configuration.jpg)
+
+
 
 - Verified log flow in Splunk: index="windows_logs" EventCode=4625.
-![Log Verification in Splunk](images/log-verification.png)
+
+
+![Log Verification in Splunk](images/Log%20Verification%20in%20Splunk.jpg)
+
+
 
 ## Attack Simulation
 
@@ -34,11 +54,19 @@ Simulated SMB brute-force and password spraying attacks from Kali Linux against 
 
 - Performed brute-force attack (single user, multiple passwords — LABPASS.TXT) using NetExec.
 nxc smb 192.168.1.107 -u testuser -p LABPASS.TXT
-![Brute Force Attack](images/bruteforce-attack.png)
+
+
+![Brute Force Attack](images/Brute%20Force%20Attack.jpg)
+
+
 
 - Performed password spraying attack (multiple users, single password — LABUSER.TXT) using NetExec.
 nxc smb 192.168.1.107 -u LABUSER.TXT -p 'labpassword'
-![Password Spraying Attack](images/password-spraying-attack.png)
+
+
+![Password Spraying Attack](images/Password%20Spraying%20Attack.jpg)
+
+
 
 ## Detection (Splunk Queries)
 
@@ -47,24 +75,36 @@ Analyzed the forwarded Windows logs in Splunk to detect and investigate the brut
 - Timeline of failed and successful authentication attempts over time.
 
 index="windows_logs" (EventCode=4625 OR EventCode=4624) | timechart count span=1m
-![Attack Timeline](images/timeline-attack.png)
+
+
+![Attack Timeline](images/Attack%20Timeline.jpg)
+
+
 
 - Comparison of failed vs. successful login attempts per account and source IP.
 
 index="windows_logs" (EventCode=4625 OR EventCode=4624) | stats count(eval(EventCode=4625)) as failures, count(eval(EventCode=4624)) as success by Account_Name, Source_Network_Address
-![Success vs Failure Comparison](images/success-vs-failure.png)
+
+
+![Success vs Failure Comparison](images/Success%20vs%20Failure%20Comparison.jpg)
+
+
 
 - Number of unique accounts targeted per source IP, confirming password spraying behavior.
 
 index="windows_logs" EventCode=4625 | stats dc(Account_Name) as unique_user count by Source_Network_Address
-![Unique Users per Source IP](images/unique-users-per-source.png)
+
+
+![Unique Users per Source IP](images/Unique%20Users%20per%20Source%20IP.jpg)
+
+
 
 Both wordlists contained the correct credential within the list, resulting in a successful authentication (Event ID 4624) preceded by multiple failed attempts (Event ID 4625) — simulating a realistic brute-force/spray pattern for detection in Splunk.
 
 ## Findings
 - All failed logins (EventCode 4625) came from a single source IP (192.168.1.104), targeting multiple accounts — a password spraying pattern.
 - A successful login (EventCode 4624) followed, confirming the attack succeeded.
-
+  
 ## Recommendations
 - Enforce strong passwords and account lockout policies.
 - Restrict SMB exposure via firewall rules; disable SMBv1 where possible.
@@ -72,4 +112,4 @@ Both wordlists contained the correct credential within the list, resulting in a 
 
 ## Conclusion
 A simulated SMB brute-force/password spraying attack was detected and analyzed using Splunk, demonstrating hands-on log forwarding and detection skills in an isolated lab environment.
-
+  
